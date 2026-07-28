@@ -1,0 +1,130 @@
+---
+// The only client-side JavaScript on the page.
+// Layout.astro stamps data-theme before first paint; this only handles the click.
+---
+
+<button
+  type="button"
+  id="theme-toggle"
+  class="toggle"
+  aria-live="polite"
+  aria-label="Switch to light theme"
+>
+  <svg
+    class="icon icon-sun"
+    viewBox="0 0 24 24"
+    width="15"
+    height="15"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.6"
+    stroke-linecap="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path
+      d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+    ></path>
+  </svg>
+  <svg
+    class="icon icon-moon"
+    viewBox="0 0 24 24"
+    width="15"
+    height="15"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path>
+  </svg>
+  <span class="label" data-theme-label>Light</span>
+</button>
+
+<style>
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.7rem;
+    transition:
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .toggle:hover {
+    color: var(--text);
+    border-color: var(--muted);
+  }
+
+  .icon {
+    flex: none;
+  }
+
+  /* Show the icon for the theme the button switches *to*. */
+  .icon-sun {
+    display: none;
+  }
+
+  :global(html[data-theme='dark']) .icon-sun {
+    display: block;
+  }
+
+  :global(html[data-theme='dark']) .icon-moon {
+    display: none;
+  }
+
+  :global(html[data-theme='light']) .icon-sun {
+    display: none;
+  }
+
+  :global(html[data-theme='light']) .icon-moon {
+    display: block;
+  }
+
+  .label {
+    line-height: 1;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    var label = btn.querySelector('[data-theme-label]');
+    var root = document.documentElement;
+
+    function sync() {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      if (label) label.textContent = next === 'light' ? 'Light' : 'Dark';
+      btn.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+    }
+
+    btn.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {
+        /* private mode — the toggle still works for this session */
+      }
+      sync();
+    });
+
+    sync();
+  })();
+</script>

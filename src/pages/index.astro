@@ -1,0 +1,796 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Section from '../components/Section.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+import { SITE, FULL_NAME, splitEmail } from '../data/site';
+import { EXPERIENCE } from '../data/experience';
+import { PROJECTS } from '../data/projects';
+import { SKILL_GROUPS, CREDENTIALS } from '../data/skills';
+
+const { user: emailUser, domain: emailDomain } = splitEmail(SITE.email);
+const pad = (n: number) => String(n + 1).padStart(2, '0');
+
+/*
+ * The h1 reveals word by word on load. Splitting happens here, at build time,
+ * so the served HTML already contains every word as a real element — no client
+ * JS, and the heading is complete for screen readers and crawlers even though
+ * CSS animates the words in. A wrapping serif h1 cannot use a single clip-path
+ * sweep: that reveals all lines at once and reads as a wipe rather than as
+ * composition. Per-word staggering survives whatever line breaks the viewport
+ * produces.
+ */
+const nameWords = SITE.name.split(' ');
+---
+
+<Layout title={SITE.ogTitle} description={SITE.ogDescription}>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <span class="field mark">RMR</span>
+      <ThemeToggle />
+    </div>
+  </header>
+
+  <main id="main">
+    {/* ---------------------------------------------------------------- *
+        01 — Hero
+     * ---------------------------------------------------------------- */}
+    <section class="section hero" aria-labelledby="hero-heading">
+      <div class="shell">
+        <div class="ledger">
+          {/* The field column carries the section marker only — repeating the
+              name here would just duplicate the h1 sitting beside it. */}
+          <p class="field hero-field">
+            <span aria-hidden="true">01</span>
+            <span class="hero-field-text">Profile</span>
+          </p>
+
+          <div>
+            {/*
+              * `aria-label` carries the whole name so screen readers announce one
+              * continuous string; the per-word spans inside are hidden from the
+              * accessibility tree. Without this, splitting for the animation would
+              * make the h1 read as disconnected words.
+              */}
+            <h1
+              id="hero-heading"
+              class="display-xl name type-in"
+              aria-label={`${FULL_NAME}, ${SITE.credentialSuffix}`}
+            >
+              {/*
+                * Written without whitespace inside the spans on purpose: `.word`
+                * is inline-block, so any leading or trailing space in the element
+                * widens the word box and opens a visible gap. The separating
+                * spaces belong between the spans, never within them.
+                */}
+              <span aria-hidden="true">
+                <span class="word honorific" style="--i: 0">{SITE.honorific}</span>{' '}
+                {nameWords.map((word, i) => (
+                  <><span class="word" style={`--i: ${i + 1}`}>{word}</span>{' '}</>
+                ))}<span class="word suffix" style={`--i: ${nameWords.length + 1}`}>, {SITE.credentialSuffix}</span>
+              </span>
+            </h1>
+
+            <p class="title field">{SITE.title}</p>
+
+            <p class="positioning draw-rule">{SITE.positioning}</p>
+
+            <p class="lede summary measure">{SITE.summary}</p>
+
+            {
+              SITE.availability ? (
+                <p class="availability availability-live field">
+                  <span class="dot" aria-hidden="true" />
+                  {SITE.availability}
+                </p>
+              ) : (
+                /*
+                 * TODO(reinhard): set `availability` in src/data/site.ts to the
+                 * real hours-per-week and remote-only answer. This placeholder
+                 * renders until then — it deliberately makes no claim.
+                 */
+                <p class="availability availability-todo field">
+                  <span class="dot" aria-hidden="true"></span>
+                  Availability: to be confirmed
+                </p>
+              )
+            }
+
+            <div class="actions">
+              <a class="cta cta-primary" href={`mailto:${SITE.email}`}>
+                Email me
+                <svg
+                  viewBox="0 0 24 24"
+                  width="13"
+                  height="13"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </a>
+
+              <a
+                class="cta cta-secondary"
+                href={SITE.github}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+                <span class="sr-only"> (opens in a new tab)</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="12"
+                  height="12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M7 17 17 7M9 7h8v8" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------------------------------------------------------- *
+        02 — Experience (above projects: the credibility anchor)
+     * ---------------------------------------------------------------- */}
+    <Section index="02" label="Experience" id="experience" heading="Where I have worked">
+      <ol class="timeline reveal-stagger">
+        {
+          EXPERIENCE.map((entry) => (
+            <li class="entry">
+              <div class="entry-head">
+                <h3 class="display-md company">{entry.company}</h3>
+                <p class="entry-meta">
+                  <span class="role">{entry.role}</span>
+                  <time class="period field" datetime={entry.startYear}>
+                    {entry.period}
+                  </time>
+                </p>
+              </div>
+
+              {entry.scope && <p class="scope measure">{entry.scope}</p>}
+
+              <ul class="roles">
+                {entry.roles.map((role) => (
+                  <li class:list={['role-item', role.emphasis && 'role-emphasis']}>
+                    <span class="role-label">{role.label}</span>
+                    {role.detail && <span class="role-detail">{role.detail}</span>}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ol>
+    </Section>
+
+    {/* ---------------------------------------------------------------- *
+        03 — Projects
+     * ---------------------------------------------------------------- */}
+    <Section index="03" label="Projects" id="projects" heading="What I have built">
+      <div class="projects-grid reveal-stagger">
+        {
+          PROJECTS.map((project, i) => (
+            <div class:list={[project.featured && 'project-featured']}>
+              <ProjectCard project={project} index={pad(i)} />
+            </div>
+          ))
+        }
+      </div>
+    </Section>
+
+    {/* ---------------------------------------------------------------- *
+        04 — What I do
+     * ---------------------------------------------------------------- */}
+    <Section index="04" label="Capability" id="capability" heading="What I do">
+      <dl class="capabilities reveal-stagger">
+        {
+          SKILL_GROUPS.map((group) => (
+            <div class="capability">
+              <dt class="capability-name">{group.name}</dt>
+              <dd class="capability-items">
+                <ul class="items">
+                  {group.items.map((item) => (
+                    <li class="chip">{item}</li>
+                  ))}
+                </ul>
+                {group.note && <p class="capability-note field">{group.note}</p>}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </Section>
+
+    {/* ---------------------------------------------------------------- *
+        05 — Credentials
+     * ---------------------------------------------------------------- */}
+    <Section index="05" label="Credentials" id="credentials" heading="Credentials">
+      <ul class="credentials reveal-stagger">
+        {
+          CREDENTIALS.map((credential) => (
+            <li class="credential">
+              <span class="credential-title">{credential.title}</span>
+              {credential.detail && (
+                <span class="credential-detail field">{credential.detail}</span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </Section>
+
+    {/* ---------------------------------------------------------------- *
+        06 — Contact
+     * ---------------------------------------------------------------- */}
+    <Section index="06" label="Contact" id="contact" heading="Get in touch">
+      <p class="lede measure contact-lede">
+        A good first message says what needs automating and a rough timeline. That is
+        enough for me to tell you whether I am the right person and what it would take.
+      </p>
+
+      <div class="contact-links">
+        <a class="contact-link" href={`mailto:${SITE.email}`}>
+          <span class="field contact-label">Email</span>
+          {/*
+            Obfuscated against naive scrapers: the literal address never appears
+            in a single text node. The mailto href is intact, so the link works
+            with JS disabled and the address stays selectable and copyable.
+          */}
+          <span class="contact-value email"
+            ><span>{emailUser}</span><span class="at" aria-hidden="true"
+              >&#64;</span
+            ><span class="sr-only">@</span><span>{emailDomain}</span></span
+          >
+        </a>
+
+        <a
+          class="contact-link"
+          href={SITE.github}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="field contact-label">GitHub</span>
+          <span class="contact-value"
+            >github.com/{SITE.githubHandle}<span class="sr-only">
+              (opens in a new tab)</span
+            ></span
+          >
+        </a>
+      </div>
+    </Section>
+  </main>
+
+  <footer class="footer rule-top">
+    <div class="shell footer-inner">
+      <p class="field">
+        {FULL_NAME}, {SITE.credentialSuffix}
+      </p>
+      <p class="field">Built with Astro. No trackers, no cookies.</p>
+    </div>
+  </footer>
+</Layout>
+
+{/*
+  * Replays the hero name reveal whenever the heading re-enters the viewport.
+  * Inline and un-bundled so it costs no extra request.
+  *
+  * Script rather than CSS because the reveal is a time-based stagger, and a
+  * scroll timeline cannot restart one — see the Motion notes in CLAUDE.md.
+  * Everything here is progressive: the name is fully visible and correct with
+  * the script stripped out.
+  */}
+<script is:inline>
+  (() => {
+    const h1 = document.getElementById('hero-heading');
+    if (!h1 || !('IntersectionObserver' in window)) return;
+
+    // Honour the OS setting the same way the stylesheet does, and keep
+    // honouring it if the visitor changes it mid-session.
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+    // Removing the class alone is not enough: the browser coalesces the
+    // remove and re-add within one frame, so the animation is never seen to
+    // restart. Reading offsetWidth forces the reflow between the two.
+    const replay = () => {
+      h1.classList.remove('type-in');
+      void h1.offsetWidth;
+      h1.classList.add('type-in');
+    };
+
+    new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !still.matches) replay();
+        }
+      },
+      // Only once the heading is genuinely back in view, so a hairline of
+      // overlap at the edge of the viewport does not trigger it.
+      { threshold: 0.6 }
+    ).observe(h1);
+  })();
+</script>
+
+<style>
+  /* ---------------- topbar ---------------- */
+
+  .topbar {
+    padding-block: 1.5rem;
+  }
+
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .mark {
+    color: var(--text);
+    letter-spacing: 0.22em;
+  }
+
+  /* ---------------- hero ---------------- */
+
+  .hero {
+    padding-top: 2.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .hero {
+      padding-top: 5rem;
+      padding-bottom: 7rem;
+    }
+  }
+
+  .hero-field {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1.75rem;
+  }
+
+  @media (min-width: 60rem) {
+    .hero-field {
+      padding-top: 1.1rem;
+      margin-bottom: 0;
+    }
+  }
+
+  .hero-field-text {
+    color: var(--text);
+  }
+
+  .name {
+    margin-bottom: 1.25rem;
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Hero name: word-by-word reveal
+   *
+   * The stagger is time-based. A pure-CSS scroll timeline cannot restart it
+   * on re-entry: `view()` scrubs an animation against scroll position, but
+   * this one has already run to completion on its own clock, and CSS offers
+   * no way to rewind it from a scroll offset. Replay is therefore driven by
+   * the small IntersectionObserver in the hero script, which removes and
+   * re-adds `.type-in` so the identical 2.6s reveal plays again.
+   *
+   * The un-animated state is the finished state: if the script never runs
+   * and no animation plays, the name is plainly visible, which is why
+   * `.word` carries no base opacity of its own.
+   * ---------------------------------------------------------------- */
+
+  .word {
+    /* Required to transform, but inline-block spans do not collapse the
+       whitespace between them, so the natural line wrap is preserved. */
+    display: inline-block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .type-in .word {
+      animation: word-in 1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+      /* --i is the word index, set inline. 200ms apart paces the line as
+         deliberate composition rather than a queue to sit through. */
+      animation-delay: calc(var(--i) * 200ms);
+    }
+
+    /* The caret trails the final word and retires once the line settles,
+       rather than blinking forever and pulling the eye off the copy. */
+    .type-in::after {
+      content: '';
+      display: inline-block;
+      width: 0.06em;
+      height: 0.62em;
+      margin-left: 0.06em;
+      background-color: var(--accent);
+      vertical-align: baseline;
+      /* Blink count and retire delay both track the ~2.6s stagger; the caret
+         should outlive the last word by a beat, then leave. */
+      animation:
+        caret-blink 0.62s steps(1, end) 7,
+        caret-retire 0.01s linear 4.4s both;
+    }
+
+  }
+
+  /* Fade front-loaded for the same contrast reason as `reveal-in`; here the
+     blur is what keeps the word from simply popping in. */
+  @keyframes word-in {
+    from {
+      opacity: 0;
+      /* Rises from behind its own baseline, so words surface into the line
+         instead of sliding in from the side. */
+      transform: translateY(0.34em);
+      filter: blur(4px);
+    }
+    45% {
+      opacity: 1;
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @keyframes caret-blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes caret-retire {
+    to {
+      opacity: 0;
+      width: 0;
+      margin-left: 0;
+    }
+  }
+
+  /* Sized down so the honorific reads as a title, not part of the name. */
+  .honorific {
+    color: var(--muted);
+    font-size: 0.52em;
+    letter-spacing: -0.01em;
+  }
+
+  .suffix {
+    color: var(--muted);
+    font-size: 0.4em;
+    letter-spacing: 0.02em;
+    /* Keeps the credential from riding the serif's baseline overhang. */
+    vertical-align: 0.6em;
+  }
+
+  .title {
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0.01em;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    max-width: 52ch;
+    padding-bottom: 2.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* The thesis of the page. Sized above the supporting paragraph and marked
+     with the accent rule so a 30-second skim cannot miss it. The rule is a
+     pseudo-element rather than a border so it can draw itself in on scroll. */
+  .positioning {
+    position: relative;
+    margin-top: 2.5rem;
+    max-width: 22ch;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.012em;
+    padding-left: 1.25rem;
+  }
+
+  .positioning::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.1em;
+    bottom: 0.1em;
+    width: 2px;
+    background-color: var(--accent);
+    transform-origin: top;
+  }
+
+  .summary {
+    margin-top: 1.5rem;
+  }
+
+  .availability {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0.04em;
+  }
+
+  /* A real claim: solid border, accent text. */
+  .availability-live {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--rule));
+  }
+
+  /* No claim yet: dashed, so it never reads as a commitment. */
+  .availability-todo {
+    border-style: dashed;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    flex: none;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2.25rem;
+  }
+
+  /* ---------------- experience ---------------- */
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  .entry-head {
+    margin-bottom: 1.1rem;
+  }
+
+  .company {
+    margin-bottom: 0.5rem;
+  }
+
+  .entry-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem 1rem;
+  }
+
+  .role {
+    color: var(--text);
+    font-size: 0.9375rem;
+  }
+
+  .period {
+    color: var(--muted);
+  }
+
+  .scope {
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .roles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    border-left: 1px solid var(--rule);
+    padding-left: 1.25rem;
+  }
+
+  .role-item {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 70ch;
+  }
+
+  .role-label {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* The two strongest signals in the BTG entry, and the seniority evidence at
+     Accenture, get the accent so a 30-second skim lands on them first. */
+  .role-emphasis .role-label {
+    color: var(--accent);
+  }
+
+  .role-label::after {
+    content: ': ';
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* The PLDT entry has a label but no detail; drop the dangling separator. */
+  .role-label:only-child::after {
+    content: none;
+  }
+
+  /* ---------------- capability ---------------- */
+
+  .capabilities {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+  }
+
+  .capability {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .capability:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  @media (min-width: 44rem) {
+    .capability {
+      grid-template-columns: 13rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  .capability-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  .capability-items {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .capability-note {
+    margin-top: 0.75rem;
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0.06em;
+  }
+
+  /* ---------------- credentials ---------------- */
+
+  .credentials {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .credential {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    padding-block: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .credential:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .credential-title {
+    font-size: 1.0625rem;
+  }
+
+  .credential-detail {
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------------- contact ---------------- */
+
+  .contact-lede {
+    margin-bottom: 2.5rem;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .contact-link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 1.5rem;
+    padding-block: 1.15rem;
+    border-top: 1px solid var(--rule);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+
+  .contact-link:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .contact-link:hover .contact-value {
+    color: var(--accent);
+  }
+
+  .contact-label {
+    min-width: 5rem;
+  }
+
+  .contact-value {
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    color: var(--text);
+    transition: color 150ms ease;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------------- footer ---------------- */
+
+  .footer {
+    padding-block: 2.5rem 3.5rem;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0.06em;
+  }
+
+  /* ---------------- utilities ---------------- */
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

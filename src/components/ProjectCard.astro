@@ -1,0 +1,310 @@
+---
+import type { Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+  /** Zero-padded ordinal shown in the card's field label. */
+  index: string;
+}
+
+const { project, index } = Astro.props;
+const { title, tag, summary, problem, stack, links, credentials, note, shot, featured } =
+  project;
+---
+
+<article class:list={['card', featured && 'card-featured']}>
+  <header class="head">
+    <span class="field ordinal" aria-hidden="true">{index}</span>
+    <span class="tag">{tag}</span>
+  </header>
+
+  <h3 class:list={[featured ? 'display-md' : 'title', 'name']}>{title}</h3>
+
+  <p class:list={['summary', featured && 'summary-featured']}>{summary}</p>
+
+  {/* On the featured card the screenshot and the prose sit side by side so the
+      extra row width buys real content rather than a taller column. */}
+  <div class:list={['body', featured && 'body-split']}>
+    <div class="body-main">
+      <p class="problem body-sm">{problem}</p>
+
+      {
+        credentials && (
+          <p class="credentials body-sm">
+            <span class="field cred-label">Demo login</span>
+            <code>{credentials.username}</code>
+            <span class="cred-sep" aria-hidden="true">
+              /
+            </span>
+            <code>{credentials.password}</code>
+          </p>
+        )
+      }
+
+      {note && <p class="note body-sm">{note}</p>}
+    </div>
+
+    {
+      shot && shot.status === 'available' && (
+        <figure class="shot-figure">
+          <img
+            class="shot"
+            src={shot.src}
+            alt={shot.alt}
+            width={shot.width}
+            height={shot.height}
+            loading="lazy"
+            decoding="async"
+          />
+          {shot.caption && <figcaption class="shot-caption field">{shot.caption}</figcaption>}
+        </figure>
+      )
+    }
+
+    {
+      shot && shot.status === 'missing' && (
+        <div
+          class="shot-placeholder"
+          role="img"
+          aria-label={`Screenshot not available. ${shot.missingNote ?? ''}`}
+        >
+          <span class="field">Screenshot pending</span>
+          <p class="placeholder-note">{shot.missingNote}</p>
+        </div>
+      )
+    }
+  </div>
+
+  <ul class="stack" aria-label={`${title} stack`}>
+    {stack.map((item) => <li class="chip">{item}</li>)}
+  </ul>
+
+  {
+    links.length > 0 && (
+      <nav class="links" aria-label={`${title} links`}>
+        {links.map((link) => (
+          <a
+            class="link body-sm"
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {link.label}
+            <span class="sr-only"> (opens in a new tab)</span>
+            <svg
+              class="ext"
+              viewBox="0 0 24 24"
+              width="11"
+              height="11"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M7 17 17 7M9 7h8v8" />
+            </svg>
+          </a>
+        ))}
+      </nav>
+    )
+  }
+</article>
+
+<style>
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .ordinal {
+    color: var(--muted);
+  }
+
+  .name {
+    margin-bottom: 0.7rem;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .summary {
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: 62ch;
+  }
+
+  .summary-featured {
+    font-size: 1.0625rem;
+    max-width: 68ch;
+  }
+
+  .body {
+    margin-top: 1.1rem;
+  }
+
+  /* Featured card only: prose left, screenshot right. The screenshot is the
+     proof, so it takes the larger share of the row. */
+  @media (min-width: 56rem) {
+    .body-split {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+      gap: 3rem;
+      align-items: start;
+    }
+  }
+
+  .body-main {
+    min-width: 0;
+  }
+
+  .shot-figure {
+    margin: 1.75rem 0 0;
+    min-width: 0;
+  }
+
+  .shot {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background-color: var(--bg);
+  }
+
+  /* Shots keep their own proportions, so a tall one would otherwise run away
+     with a narrow card. Cap the height and anchor the visible part to the top.
+     The featured card has the width to show a shot in full, so it opts out. */
+  .body:not(.body-split) .shot {
+    max-height: 26rem;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .shot-caption {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+  }
+
+  .shot-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 12rem;
+    margin-top: 1.75rem;
+    padding: 1.75rem;
+    text-align: center;
+    border: 1px dashed var(--rule);
+    border-radius: 3px;
+    background-color: var(--bg);
+  }
+
+  .body-split .shot-figure,
+  .body-split .shot-placeholder {
+    margin-top: 0;
+  }
+
+  .placeholder-note {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    max-width: 40ch;
+  }
+
+  .problem {
+    color: var(--muted);
+    max-width: 68ch;
+  }
+
+  .credentials {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.5rem;
+    color: var(--muted);
+  }
+
+  /* The label owns its own line so the pair below never splits mid-credential. */
+  .cred-label {
+    flex-basis: 100%;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .credentials code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text);
+    background-color: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.1rem 0.4rem;
+  }
+
+  .cred-sep {
+    color: var(--rule);
+  }
+
+  .note {
+    color: var(--muted);
+    margin-top: 1rem;
+    font-style: italic;
+    max-width: 62ch;
+  }
+
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1.5rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    /* Pushes links to the card's bottom edge so a row of cards aligns. */
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .ext {
+    flex: none;
+    opacity: 0.75;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

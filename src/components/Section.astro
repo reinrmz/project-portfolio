@@ -1,0 +1,61 @@
+---
+interface Props {
+  /** Ledger field label, e.g. "02 / EXPERIENCE". */
+  index: string;
+  label: string;
+  id: string;
+  /** Heading text; rendered as the section's h2. */
+  heading?: string;
+}
+
+const { index, label, id, heading } = Astro.props;
+const headingId = `${id}-heading`;
+---
+
+<section id={id} class="section rule-top" aria-labelledby={heading ? headingId : undefined}>
+  <div class="shell">
+    <div class="ledger">
+      <div class="field label-cell">
+        <span aria-hidden="true">{index}</span>
+        <span class="label-text">{label}</span>
+      </div>
+
+      <div class="content">
+        {heading && <h2 id={headingId} class="display-lg heading">{heading}</h2>}
+        <slot />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .label-cell {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .label-cell {
+      /* Optically aligns the label with the first line of the heading. */
+      padding-top: 0.7rem;
+      margin-bottom: 0;
+      position: sticky;
+      top: 2.5rem;
+      align-self: start;
+    }
+  }
+
+  .label-text {
+    color: var(--text);
+  }
+
+  .heading {
+    margin-bottom: 2.25rem;
+  }
+
+  .content {
+    min-width: 0;
+  }
+</style>

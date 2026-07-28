@@ -1,0 +1,602 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * Fonts — self-hosted, no CDN request at runtime.
+ * Instrument Serif carries the display voice, Inter Tight the body,
+ * JetBrains Mono the ledger field labels.
+ * ------------------------------------------------------------------ */
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-400-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('/fonts/inter-tight-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('/fonts/inter-tight-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Tight';
+  src: url('/fonts/inter-tight-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------ *
+ * Theme tokens
+ * ------------------------------------------------------------------ */
+
+@theme {
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-sans: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* The ledger grid's fixed label column. */
+  --spacing-label: 13rem;
+}
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0b0d0f;
+  --surface: #131619;
+  --surface-raised: #191d21;
+  --text: #edeae4;
+  --muted: #8b9099;
+  --rule: #22262b;
+  --accent: #d98e32;
+  --accent-quiet: #3a2c17;
+  --focus: #d98e32;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #faf9f7;
+  --surface: #f1eee9;
+  --surface-raised: #ebe7e0;
+  --text: #16181b;
+  --muted: #5c6169;
+  --rule: #dedad2;
+  --accent: #9a5b12;
+  --accent-quiet: #f0e3d1;
+  --focus: #9a5b12;
+}
+
+/* Honour the OS preference until the visitor makes an explicit choice.
+   The inline script in Layout.astro stamps data-theme before first paint,
+   so this block only governs the no-JS case. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+
+    --bg: #faf9f7;
+    --surface: #f1eee9;
+    --surface-raised: #ebe7e0;
+    --text: #16181b;
+    --muted: #5c6169;
+    --rule: #dedad2;
+    --accent: #9a5b12;
+    --accent-quiet: #f0e3d1;
+    --focus: #9a5b12;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Guards against horizontal scroll at every width. */
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  font-feature-settings: 'kern', 'liga';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 400;
+  line-height: 1.1;
+  text-wrap: balance;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Visible, consistent focus ring everywhere. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+/* ------------------------------------------------------------------ *
+ * Layout primitives
+ * ------------------------------------------------------------------ */
+
+.shell {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 48rem) {
+  .shell {
+    padding-inline: 3rem;
+  }
+}
+
+@media (min-width: 90rem) {
+  .shell {
+    padding-inline: 4rem;
+  }
+}
+
+/* Prose columns cap at ~72ch for readability. */
+.measure {
+  max-width: 72ch;
+}
+
+.measure-tight {
+  max-width: 60ch;
+}
+
+/*
+ * The ledger grid — the page's signature.
+ *
+ * A fixed monospace label column on the left, prose on the right. It reads the
+ * way a data dictionary or schema definition reads, which is the subject's own
+ * vernacular. Collapses to a single stacked column below 60rem.
+ */
+.ledger {
+  display: grid;
+  gap: 0.75rem 2.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 60rem) {
+  .ledger {
+    grid-template-columns: var(--spacing-label) minmax(0, 1fr);
+    gap: 0 4.5rem;
+  }
+}
+
+.field {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section rules read as ledger row separators. */
+.rule-top {
+  border-top: 1px solid var(--rule);
+}
+
+.section {
+  padding-block: 4.5rem;
+}
+
+@media (min-width: 60rem) {
+  .section {
+    padding-block: 6.5rem;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Type scale
+ * ------------------------------------------------------------------ */
+
+.display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8.5vw, 6.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.display-lg {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 4.8vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+
+.display-md {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  font-size: clamp(1.1875rem, 1.7vw, 1.375rem);
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.body-sm {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+/* ------------------------------------------------------------------ *
+ * Components
+ * ------------------------------------------------------------------ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.card:hover .chip {
+  border-color: color-mix(in srgb, var(--rule) 45%, var(--muted));
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background-color: var(--accent-quiet);
+  border-radius: 2px;
+  padding: 0.3rem 0.65rem;
+}
+
+/*
+ * A single underline built from a gradient background, so it can both sit
+ * visible at rest and wipe in from the left on hover. One mechanism, no
+ * competing text-decoration.
+ */
+.link {
+  color: var(--accent);
+  text-decoration: none;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  padding-bottom: 0.18em;
+  transition: background-size 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .link {
+    background-size: 0% 1px;
+  }
+
+  .link:hover,
+  .link:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+/* At rest the underline reads quieter than the text; hover brings it up. */
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+.link:hover,
+.link:focus-visible {
+  text-decoration-color: transparent;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  padding: 0.7rem 1.15rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.cta-primary {
+  background-color: var(--accent);
+  color: #0b0d0f;
+  border: 1px solid var(--accent);
+  font-weight: 500;
+}
+
+.cta-primary:hover {
+  background-color: color-mix(in srgb, var(--accent) 85%, #fff);
+  border-color: color-mix(in srgb, var(--accent) 85%, #fff);
+}
+
+.cta-secondary {
+  border: 1px solid var(--rule);
+  color: var(--text);
+}
+
+.cta-secondary:hover {
+  border-color: var(--muted);
+}
+
+.card {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background-color: var(--surface);
+  padding: 2rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition:
+    border-color 220ms ease,
+    transform 220ms ease,
+    background-color 220ms ease;
+}
+
+/* An accent hairline wipes across the top edge on hover — the one place a
+   card announces itself, and it reuses the ledger's rule vocabulary. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px -1px auto -1px;
+  height: 2px;
+  background-color: var(--accent);
+  border-radius: 3px 3px 0 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--rule) 40%, var(--muted));
+  background-color: var(--surface-raised);
+}
+
+.card:hover::after,
+.card:focus-within::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+@media (min-width: 48rem) {
+  .card {
+    padding: 2.5rem;
+  }
+}
+
+.card-featured {
+  background-color: var(--surface-raised);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--rule));
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 56rem) {
+  .projects-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* The featured card spans the full row — extra visual weight without
+     inventing a different visual language for it. */
+  .projects-grid > .project-featured {
+    grid-column: 1 / -1;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background-color: var(--accent);
+  color: #0b0d0f;
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  border-radius: 0 0 3px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion
+ *
+ * The section reveals below are scroll-driven, so they need no JavaScript.
+ * Browsers without `animation-timeline` simply skip the animation and render
+ * the final state, which is why the un-animated default is fully visible.
+ * The hero name is the exception and is handled in `index.astro`: its reveal
+ * is time-based, and replaying that on re-entry needs an IntersectionObserver.
+ * ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      /* Runs across the band from just below the viewport to a third up it. */
+      animation-range: entry 0% cover 22%;
+    }
+
+    /* Staggering by child index makes a list read as a sequence rather than
+       one block flipping on. */
+    .reveal-stagger > * {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 18%;
+    }
+  }
+}
+
+/*
+ * Opacity finishes well before the movement does. Small muted type sits close
+ * to the 4.5:1 floor at full strength, so a slow ramp parks it at an
+ * unreadable 2.5–3:1 for as long as the visitor is scrolling — axe flags it,
+ * and it is genuinely hard to read. Front-loading the fade means the element
+ * is at full contrast for most of the travel, and only the position is still
+ * settling.
+ */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The accent rule beside the positioning statement draws itself in. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .draw-rule::before {
+      animation: draw-down linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+  }
+}
+
+@keyframes draw-down {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
