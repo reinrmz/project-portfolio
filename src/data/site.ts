@@ -16,6 +16,12 @@ export interface SiteMeta {
   readonly email: string;
   readonly github: string;
   readonly githubHandle: string;
+  /**
+   * Downloadable CV. `path` is served straight out of `/public`; `filename` is
+   * what the browser saves it as. `null` removes every résumé link from the
+   * page — the hero and contact section both render without it.
+   */
+  readonly resume: { readonly path: string; readonly filename: string } | null;
   /** Canonical deploy URL. Used for sitemap, canonical link, and OG tags. */
   readonly url: string;
   readonly ogTitle: string;
@@ -46,6 +52,13 @@ export const SITE: SiteMeta = {
   email: 'reinhardmari19@gmail.com',
   github: 'https://github.com/reinrmz',
   githubHandle: 'reinrmz',
+
+  // Lives in /public, so the path is the public URL. Replacing the file at that
+  // same path updates the download with no code change.
+  resume: {
+    path: '/reinhard-ramirez-cv.pdf',
+    filename: 'reinhard-ramirez-cv.pdf',
+  },
 
   url: CANONICAL_URL,
 

@@ -139,6 +139,35 @@ const nameWords = SITE.name.split(' ');
                   <path d="M7 17 17 7M9 7h8v8" />
                 </svg>
               </a>
+
+              {
+                /* Renders only when a CV is present — `resume: null` in
+                   src/data/site.ts drops the link everywhere. */
+                SITE.resume && (
+                  <a
+                    class="cta cta-secondary"
+                    href={SITE.resume.path}
+                    download={SITE.resume.filename}
+                  >
+                    Résumé
+                    <span class="sr-only"> (PDF download)</span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path d="M12 4v11M8 11l4 4 4-4M5 19h14" />
+                    </svg>
+                  </a>
+                )
+              }
             </div>
           </div>
         </div>
@@ -272,6 +301,22 @@ const nameWords = SITE.name.split(' ');
             ></span
           >
         </a>
+
+        {
+          SITE.resume && (
+            <a
+              class="contact-link"
+              href={SITE.resume.path}
+              download={SITE.resume.filename}
+            >
+              <span class="field contact-label">Résumé</span>
+              <span class="contact-value">
+                {SITE.resume.filename}
+                <span class="sr-only"> (PDF download)</span>
+              </span>
+            </a>
+          )
+        }
       </div>
     </Section>
   </main>
