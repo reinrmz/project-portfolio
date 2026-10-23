@@ -22,6 +22,17 @@ export interface SiteMeta {
    * page — the hero and contact section both render without it.
    */
   readonly resume: { readonly path: string; readonly filename: string } | null;
+  /**
+   * BIR registration seal badge shown in the footer. `path` is served straight
+   * out of `/public`; `width`/`height` are the file's intrinsic pixel size so the
+   * browser reserves space before it loads. `null` removes it from the footer.
+   */
+  readonly birBadge: {
+    readonly path: string;
+    readonly alt: string;
+    readonly width: number;
+    readonly height: number;
+  } | null;
   /** Canonical deploy URL. Used for sitemap, canonical link, and OG tags. */
   readonly url: string;
   readonly ogTitle: string;
@@ -58,6 +69,13 @@ export const SITE: SiteMeta = {
   resume: {
     path: '/reinhard-ramirez-cv.pdf',
     filename: 'reinhard-ramirez-cv.pdf',
+  },
+
+  birBadge: {
+    path: '/bir-seal-badge.png',
+    alt: 'Bureau of Internal Revenue registered seal, 2024. RSN 23BRC20240000006570.',
+    width: 637,
+    height: 215,
   },
 
   url: CANONICAL_URL,

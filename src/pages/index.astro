@@ -327,6 +327,19 @@ const nameWords = SITE.name.split(' ');
         {FULL_NAME}, {SITE.credentialSuffix}
       </p>
       <p class="field">Built with Astro. No trackers, no cookies.</p>
+      {
+        SITE.birBadge && (
+          <img
+            class="footer-badge"
+            src={SITE.birBadge.path}
+            alt={SITE.birBadge.alt}
+            width={SITE.birBadge.width}
+            height={SITE.birBadge.height}
+            loading="lazy"
+            decoding="async"
+          />
+        )
+      }
     </div>
   </footer>
 </Layout>
@@ -823,6 +836,16 @@ const nameWords = SITE.name.split(' ');
     color: var(--muted);
     text-transform: none;
     letter-spacing: 0.06em;
+  }
+
+  /* The badge is a white-backed PNG, so it sits on its own tile in both themes
+     and takes a full row of its own rather than squeezing between the lines. */
+  .footer-badge {
+    flex-basis: 100%;
+    max-width: min(100%, 15rem);
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
   }
 
   /* ---------------- utilities ---------------- */
